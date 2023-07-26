@@ -1,0 +1,15 @@
+E:\Development\Astar\Astar\bin\Debug\net6.0\Astar.exe
+E:\Development\Astar\Astar\bin\Debug\net6.0\Astar.deps.json
+E:\Development\Astar\Astar\bin\Debug\net6.0\Astar.runtimeconfig.json
+E:\Development\Astar\Astar\bin\Debug\net6.0\Astar.dll
+E:\Development\Astar\Astar\bin\Debug\net6.0\Astar.pdb
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.csproj.AssemblyReference.cache
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.GeneratedMSBuildEditorConfig.editorconfig
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.AssemblyInfoInputs.cache
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.AssemblyInfo.cs
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.csproj.CoreCompileInputs.cache
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.dll
+E:\Development\Astar\Astar\obj\Debug\net6.0\refint\Astar.dll
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.pdb
+E:\Development\Astar\Astar\obj\Debug\net6.0\Astar.genruntimeconfig.cache
+E:\Development\Astar\Astar\obj\Debug\net6.0\ref\Astar.dll
