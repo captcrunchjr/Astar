@@ -11,7 +11,7 @@ namespace Astar
     {
         public static int GetDimension()
         {
-            int dimension = 15;
+            int dimension = 0;
             bool dimensionRestart = false;
             do
             {

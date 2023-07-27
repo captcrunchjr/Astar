@@ -68,10 +68,14 @@ namespace Astar
 
             for (int i = 0; i < cells.Length; i++)
             {
-                if (i % 15 == 0 && i != 0)
+                if (i % dimension == 0 && i != 0)
                 {
                     Console.WriteLine();
-                    Console.WriteLine("-------------------------------------------------------------------------------------------");
+                    for(int j = 0; j < (dimension*6)+1; j++) 
+                    {
+                        Console.Write("-");
+                    }
+                    Console.WriteLine();
                 }
                 Console.Write(String.Format("{0,4}", cells[i]) + " |");
             }
@@ -107,17 +111,18 @@ namespace Astar
             }
         }
 
-        public void EnumeratePathLocations(int start, int end, List<int> list, int simPosition)
+        public void EnumeratePathLocations(int start, int end, List<Node> list)
         {
+            int[] posList = new int[list.Count];
+            for(int i = 0; i < list.Count; i++)
+            {
+                posList[i] = list[i].Pos;
+            }
             for(int i = 0; i < cells.Length;i++)
             {
-                if(list.Contains(i) && i != start && i != end)
+                if(posList.Contains(i) && i != start && i != end)
                 {
-                    cells[i] = ">";
-                }
-                if(i == simPosition)
-                {
-                    cells[i] = "W";
+                    cells[i] = " > ";
                 }
             }
         }
@@ -128,11 +133,19 @@ namespace Astar
             DrawGrid();
         }
 
-        public void DrawFinalDisplay(int start, int end, List<int> pathList, int simPosition)
+        public void DrawFinalDisplay(int start, int end, List<Node> pathList)
         {
             DeEnumerateGridLocations(start, end);
-            EnumeratePathLocations(start, end, pathList, simPosition);
+            EnumeratePathLocations(start, end, pathList);
             DrawGrid();
+            if(pathList.Count < 1)
+            {
+                Console.WriteLine("No path was found.");
+            }
+            else
+            {
+                Console.WriteLine("Path found with " + pathList.Count + " total moves required!");
+            }
         }
     }
 }

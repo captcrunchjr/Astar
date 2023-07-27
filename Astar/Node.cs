@@ -7,10 +7,10 @@ using System.Transactions;
 
 namespace Astar
 {
-    internal class Node
+    internal class Node : IEquatable<Node>
     {
         int pos, row, col, f, g, h, type;
-        Node parent;
+        Node? parent;
         List<string> bounds = new List<string>();
 
         public int Pos { get { return pos; } set { pos = value; } }
@@ -24,11 +24,12 @@ namespace Astar
         public List<string> Bounds { get { return bounds; } }
 
         //constructor for obstacle nodes
-        public Node(int pos, int dimension, bool traversable)
+        public Node(int pos, int dimension, Node parent, bool traversable)
         {
             this.pos = pos;
             this.row = pos / dimension;
             this.col = pos % dimension;
+            this.parent = parent;
             if(traversable == true)
             {
                 this.type = 0;
@@ -40,15 +41,17 @@ namespace Astar
             bounds = DetermineBounds(dimension);
         }
 
-        public Node(int pos, int dimension, int h, int g)
+        public Node(int pos, int dimension, Node node, int h, int g)
         {
             this.pos = pos;
             this.row = pos / dimension;
             this.col = pos % dimension;
+            this.parent = node;
             this.h = h;
             this.g = g;
             type = 0;
             setF();
+            bounds = DetermineBounds(dimension);
         }
 
         public void setF()
@@ -73,19 +76,19 @@ namespace Astar
 
         public List<string> DetermineBounds(int dimension)
         {
-            if(row == 0)
+            if(col == 0)
             {
                 bounds.Add("left");
             }
-            if(row == dimension-1)
+            if(col == dimension-1)
             {
                 bounds.Add("right");
             }
-            if(col == 0)
+            if(row == 0)
             {
                 bounds.Add("top");
             }
-            if (col == dimension-1)
+            if (row == dimension-1)
             {
                 bounds.Add("bottom");
             }
@@ -109,5 +112,21 @@ namespace Astar
             }
         }
 
+        public bool Equals(Node? other)
+        {
+            if(this.pos == other.pos)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public string ToString()
+        {
+            return ("Node Pos: " + this.pos + " Col,Row: " + col + "," + row + " F: " + this.f + " G: " + this.g + " h: " + this.h + " Parent: " + this.parent?.pos);
+        }
     }
 }

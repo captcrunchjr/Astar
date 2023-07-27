@@ -16,18 +16,17 @@ namespace Astar
 
         List<Node> openList = new List<Node>();
         List<Node> closedList = new List<Node>();
-        List<Node> pathList = new List<Node>();
 
         public PathFinder(int start, int end, int dimension) {
             this.start = start;
             this.end = end;
             this.dimension = dimension;
-            openList.Add(NodeBuilder(start, dimension));
+            openList.Add(NodeBuilder(start, dimension, null));
         }
 
-        public Node NodeBuilder(int pos, int dimension)
+        public Node NodeBuilder(int pos, int dimension, Node parent)
         {
-            Node node = new Node(pos, dimension, CalculateHCost(pos, end), CalculateGCost(pos, start));
+            Node node = new Node(pos, dimension, parent, CalculateHCost(pos, end), CalculateGCost(pos, start));
             return node;
         }
         public int CalculateHCost(int currentPos, int end)
@@ -47,7 +46,7 @@ namespace Astar
             {
                 horizontalMoveCount *= -1;
             }
-            Console.WriteLine("The hoizontal moves needed is: " + horizontalMoveCount);
+            //Console.WriteLine("The hoizontal moves needed is: " + horizontalMoveCount);
 
             return horizontalMoveCount;
         }
@@ -59,67 +58,175 @@ namespace Astar
             {
                 verticalMoveCount *= -1;
             }
-            Console.WriteLine("The vertical moves needed is: " + verticalMoveCount);
+            //Console.WriteLine("The vertical moves needed is: " + verticalMoveCount);
             return verticalMoveCount;
         }
 
         public void GenerateOpenList(Node node, string[] cells)
         {
+            int offset;
             //if it's an obstacle, generate the node and add it to the closed list
-            if (cells[node.Pos] == " x ")
-            {
-                closedList.Add(GenerateObstacleNode(node.Pos));
-                return;
-            }
 
             //validate this isnt the left bound, if not, generate left node and add to open list
             if (!node.Bounds.Contains("left"))
             {
-                Node newNode = NodeBuilder(node.Pos-1, dimension);
-                if (!closedList.Contains(newNode))
-                {
-                    openList.Add(newNode);
-                }
+                offset = -1;
+                NodeGenerate(node, cells, offset);
             }
             //validate this isnt the right bound, if not, generate right node and add to open list
             if (!node.Bounds.Contains("right"))
             {
-                Node newNode = NodeBuilder(node.Pos+1, dimension);
-                if(!closedList.Contains(newNode))
-                {
-                    openList.Add(newNode);
-                }
+                offset = 1;
+                NodeGenerate(node, cells, offset);
             }
             //validate this isnt the top bound, if not, generate upper node and add to open list
-            if (!node.Bounds.Contains("up"))
+            if (!node.Bounds.Contains("top"))
             {
-                Node newNode = NodeBuilder(node.Pos - dimension, dimension);
-                if(!closedList.Contains(newNode))
+                offset = dimension * -1;
+                NodeGenerate(node, cells, offset);
+            }
+            //validate this isnt the bottom bound, if not, generate lower node and add to open list
+            if (!node.Bounds.Contains("bottom"))
+            {
+                offset = dimension;
+                NodeGenerate(node, cells, offset);
+            }
+        }
+
+        private void NodeGenerate(Node node, string[] cells, int offset)
+        {
+            if (cells[node.Pos + offset] == " x ")
+            {
+                Node newNode = GenerateObstacleNode(node.Pos + offset, node);
+                closedList.Add(newNode);
+            }
+            else
+            {
+                Node newNode = NodeBuilder(node.Pos + offset, dimension, node);
+
+                if (!closedList.Contains(newNode) && !openList.Contains(newNode))
                 {
                     openList.Add(newNode);
                 }
-            }
-            //validate this isnt the bottom bound, if not, generate lower node and add to open list
-            if (!node.Bounds.Contains("down"))
-            {
-                Node newNode = NodeBuilder(node.Pos + dimension, dimension);
-                if(!closedList.Contains(newNode))
+                else
                 {
-                    openList.Add(newNode);
+                    EvaluateParentNode(newNode);
                 }
             }
         }
 
-        public Node GenerateObstacleNode(int pos)
+        public void EvaluateParentNode(Node newNode)
         {
-            Node newNode = new Node(pos, dimension, false);
+            Node existingNode;
+            for(int i = 0; i<closedList.Count; i++)
+            {
+                existingNode = closedList[i];
+                if(existingNode.Pos == newNode.Pos)
+                {
+                    if (existingNode.G > newNode.G)
+                    {
+                        existingNode.setParent(newNode.Parent);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public Node GenerateObstacleNode(int pos, Node parent)
+        {
+            Node newNode = new Node(pos, dimension, parent, false);
             return newNode;
+        }
+        
+        public bool CheckForGoalState(Node node)
+        {
+            if (node.Pos == end)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public Node FindLowestFScoreNode()
+        {
+            SortOpenList();
+            return openList[0];
         }
 
         void SortOpenList()
         {
-            openList.Sort();
+            for (int i = 0; i < openList.Count-1; i++)
+            {
+                //Node temp = openList[i];
+                for (int j = i+1; j < openList.Count; j++)
+                {
+                    if (!openList[i].CompareTo(openList[j]))
+                    {
+                        Node temp = openList[i];
+                        openList[i] = openList[j];
+                        openList[j] = temp;
+                    }
+                    else if (openList[i].F == openList[j].F && openList[i].H > openList[j].H)
+                    {
+                        Node temp = openList[i];
+                        openList[i] = openList[j];
+                        openList[j] = temp;
+                    }
+                }
+            }
         }
+
+        public List<Node> GeneratePathList(Node node)
+        {
+            List<Node> list = new List<Node>();
+            Node currentNode = node;
+            list.Add(currentNode);
+            while(currentNode.Parent != null)
+            {
+                list.Add(currentNode.Parent);
+                currentNode = currentNode.Parent;
+            }
+            list.Reverse();
+            return list;
+        }
+
+        public List<Node> FindPath(string[] cells)
+        {
+            List<Node> pathList = new List<Node>();
+
+            bool endLoop = false;
+            do
+            {
+                Node node = FindLowestFScoreNode();
+                if (CheckForGoalState(node))
+                {
+                    Console.WriteLine("Win found!");
+                    endLoop = true;
+                    pathList = GeneratePathList(node);
+                    break;
+                }
+                GenerateOpenList(node, cells);
+                openList.Remove(node);
+                closedList.Add(node);
+                if (openList.Count == 0)
+                {
+                    Console.WriteLine("No win possible.");
+                    endLoop = true;
+                }
+
+            } while (!endLoop);
+            for(int i = 0; i < pathList.Count; i++)
+            {
+                Console.WriteLine(i + " " + pathList[i].ToString());
+            }
+
+            return pathList;
+        }
+
+
 
         /*void SortOpenList()
         {
@@ -135,6 +242,11 @@ namespace Astar
                     }
                 }
             }
+        }
+        
+                 void SortOpenList()
+        {
+            openList.Sort();
         }*/
     }
 }
