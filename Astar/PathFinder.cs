@@ -21,12 +21,13 @@ namespace Astar
             this.start = start;
             this.end = end;
             this.dimension = dimension;
-            openList.Add(NodeBuilder(start, dimension, null));
+            Node startNode = new Node(start, dimension, null, CalculateHCost(start, end), 0);
+            openList.Add(startNode);
         }
 
         public Node NodeBuilder(int pos, int dimension, Node parent)
         {
-            Node node = new Node(pos, dimension, parent, CalculateHCost(pos, end), CalculateGCost(pos, start));
+            Node node = new Node(pos, dimension, parent, CalculateHCost(pos, end), CalculateGCost(parent));
             return node;
         }
         public int CalculateHCost(int currentPos, int end)
@@ -34,9 +35,11 @@ namespace Astar
             return CalculateHorizontalPathCost(currentPos, end) + CalculateVerticalPathCost(currentPos, end);
         }
 
-        public int CalculateGCost(int currentPos, int start)
+        public int CalculateGCost(Node parent)
         {
-            return CalculateHorizontalPathCost(currentPos, start) + CalculateVerticalPathCost(currentPos, start);
+            //return CalculateHorizontalPathCost(currentPos, start) + CalculateVerticalPathCost(currentPos, start);
+            int gcost = parent.G + 10;
+            return gcost;
         }
 
         public int CalculateHorizontalPathCost(int currentPos, int destination)
@@ -108,7 +111,7 @@ namespace Astar
                 {
                     openList.Add(newNode);
                 }
-                else
+                else if(openList.Contains(newNode))
                 {
                     EvaluateParentNode(newNode);
                 }
@@ -118,9 +121,9 @@ namespace Astar
         public void EvaluateParentNode(Node newNode)
         {
             Node existingNode;
-            for(int i = 0; i<closedList.Count; i++)
+            for(int i = 0; i<openList.Count; i++)
             {
-                existingNode = closedList[i];
+                existingNode = openList[i];
                 if(existingNode.Pos == newNode.Pos)
                 {
                     if (existingNode.G > newNode.G)
@@ -200,17 +203,17 @@ namespace Astar
             bool endLoop = false;
             do
             {
-                Node node = FindLowestFScoreNode();
-                if (CheckForGoalState(node))
+                Node currentNode = FindLowestFScoreNode();
+                openList.Remove(currentNode);
+                if (CheckForGoalState(currentNode))
                 {
                     Console.WriteLine("Win found!");
                     endLoop = true;
-                    pathList = GeneratePathList(node);
+                    pathList = GeneratePathList(currentNode);
                     break;
                 }
-                GenerateOpenList(node, cells);
-                openList.Remove(node);
-                closedList.Add(node);
+                GenerateOpenList(currentNode, cells);
+                closedList.Add(currentNode);
                 if (openList.Count == 0)
                 {
                     Console.WriteLine("No win possible.");
